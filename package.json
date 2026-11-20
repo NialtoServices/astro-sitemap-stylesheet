@@ -1,6 +1,6 @@
 {
   "name": "@nialto-services/astro-sitemap-stylesheet",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Style an Astro site's XML sitemaps for people who open them in a browser, with CSS instead of XSLT.",
   "license": "MIT",
   "type": "module",
