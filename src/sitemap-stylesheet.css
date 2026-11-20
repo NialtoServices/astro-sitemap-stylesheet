@@ -1,0 +1,304 @@
+/*
+ * Styles the XML sitemaps (`sitemap-index.xml`, `sitemap-N.xml`) for people who open them in a browser.
+ * The integration in `index.mjs` writes it into the build output and links the sitemap files to it through an
+ * `<?xml-stylesheet type="text/css"?>` instruction, declaring `--sitemap-site` (the site's origin) ahead of it
+ * for the heading. This is the Nialto house sitemap design, so its palette is deliberately not the client's brand.
+ *
+ * CSS styles the raw XML elements in place, so it cannot do what the old XSLT page did with markup: URLs are
+ * not clickable, there is no filter box, and the heading's scheme cannot be dimmed apart from its host.
+ * Mobile browsers also lay XML out at desktop width, since an XML document has no viewport meta tag.
+ *
+ * Each sitemap element has at most a `::before` and an `::after` box, so the page furniture is spread across
+ * them: the root's `::before` is the eyebrow, the first row's are the heading and the note, and the root's
+ * `::after` holds the footer credit. The row's own cells carry the card styling, which keeps
+ * the first row's heading and note outside the card.
+ */
+
+/* Appearance */
+
+:root {
+  /* Colors / Black */
+  --color-black: #3a3a3a; /* Montana */
+  --color-black-dark: #313131;
+
+  /* Colors / White */
+  --color-white: #ffffff;
+  --color-white-faded-2: rgb(255, 255, 255, 9%);
+
+  /* Colors / Gray */
+  --color-gray-light-1: #f5f5f5; /* White Smoke */
+  --color-gray-light: #eaeaea; /* Lily White */
+  --color-gray: #d8d8d8; /* Iron */
+  --color-gray-dark: #bebebe; /* X11 Gray */
+  --color-gray-dark-1: #858992; /* Roman Silver */
+  --color-gray-dark-2: #60656d; /* Shuttle Gray */
+
+  /* Colors / Coral */
+  --color-coral-light: #f47070; /* Bittersweet */
+  --color-coral: #eb5648; /* Carmine Pink */
+  --color-coral-tint: rgb(253, 208, 207, 38%); /* Cosmos */
+  --color-coral-tint-dark: rgb(244, 112, 112, 10%);
+
+  /* Colors / Indigo */
+  --color-indigo-light: #a3a5d1; /* Blue Bell */
+  --color-indigo: #6366b3; /* Soft Indigo */
+  --color-indigo-tint: rgb(163, 165, 209, 30%); /* Blue Bell */
+  --color-indigo-tint-dark: rgb(99, 102, 179, 18%);
+
+  /* Base */
+  --foreground-color: var(--color-gray-dark-2);
+  --background-color: var(--color-gray-light-1);
+  --heading-color: var(--color-black);
+  --anchor-color: var(--color-indigo);
+  --accent-color: var(--color-coral);
+  --muted-color: var(--color-gray-dark-1);
+  --placeholder-color: var(--color-gray-dark);
+  --separator-color: var(--color-gray-light);
+
+  /* Backdrop */
+  --backdrop-color-1: var(--color-indigo-tint);
+  --backdrop-color-2: var(--color-coral-tint);
+
+  /* Cards */
+  --card-background-color: var(--color-white);
+
+  /* Fonts */
+  --font-family-body: 'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-family-data: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Base */
+    --foreground-color: var(--color-gray);
+    --background-color: var(--color-black-dark);
+    --heading-color: var(--color-white);
+    --anchor-color: var(--color-indigo-light);
+    --accent-color: var(--color-coral-light);
+    --muted-color: var(--color-gray-dark);
+    --placeholder-color: var(--color-gray-dark-1);
+    --separator-color: var(--color-white-faded-2);
+
+    /* Backdrop */
+    --backdrop-color-1: var(--color-indigo-tint-dark);
+    --backdrop-color-2: var(--color-coral-tint-dark);
+
+    /* Cards */
+    --card-background-color: var(--color-black);
+  }
+}
+
+/* Page */
+
+* {
+  box-sizing: border-box;
+}
+
+urlset,
+sitemapindex {
+  display: block;
+  max-width: 70rem;
+  margin: 0 auto;
+  padding: 3rem 1rem 4rem;
+  font-family: var(--font-family-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--foreground-color);
+
+  /* The root's background paints the whole canvas, so the backdrop glows sit at the viewport's top right. */
+  background:
+    radial-gradient(closest-side, var(--backdrop-color-1), transparent 72%) 61.5vw -14.9vw / 46.5vw 46.5vw no-repeat
+      fixed,
+    radial-gradient(closest-side, var(--backdrop-color-2), transparent 72%) 50.9vw -1.5vw / 43.5vw 43.5vw no-repeat
+      fixed,
+    var(--background-color);
+  counter-reset: entry;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Header */
+
+urlset::before,
+sitemapindex::before {
+  content: 'XML sitemap';
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--anchor-color);
+}
+
+sitemapindex::before {
+  content: 'XML sitemap index';
+}
+
+url:first-of-type::before,
+sitemap:first-of-type::before {
+  content: var(--sitemap-site, 'Sitemap');
+  grid-column: 1 / -1;
+  grid-row: 1;
+  margin: 0.4rem 0 0;
+  padding: 0 0 calc(1.2rem + 3px);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--heading-color);
+  background: linear-gradient(var(--accent-color), var(--accent-color)) left bottom / 2.125rem 3px no-repeat;
+  overflow-wrap: anywhere;
+}
+
+sitemap:first-of-type::before {
+  content: var(--sitemap-site, 'Sitemap index');
+}
+
+url:first-of-type::after,
+sitemap:first-of-type::after {
+  content: 'This file lists the pages of this website for search engines such as Google and Bing. It is generated automatically and is not a page visitors normally see.';
+  grid-column: 1 / -1;
+  grid-row: 2;
+  max-width: 46rem;
+  margin: 1.25rem 0 1.9rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+sitemap:first-of-type::after {
+  content: 'This index lists the individual sitemap files for this website. Search engines read it to discover every page that should appear in their results.';
+}
+
+/* Rows */
+
+url,
+sitemap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  counter-increment: entry;
+}
+
+url > *,
+sitemap > * {
+  display: none;
+}
+
+url > loc,
+url > lastmod,
+sitemap > loc,
+sitemap > lastmod {
+  display: block;
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-family-data);
+  background-color: var(--card-background-color);
+  border-bottom: 0.5px solid var(--separator-color);
+}
+
+url:first-of-type > loc,
+url:first-of-type > lastmod,
+sitemap:first-of-type > loc,
+sitemap:first-of-type > lastmod {
+  grid-row: 3;
+}
+
+url > loc,
+sitemap > loc {
+  display: flex;
+  grid-column: 1;
+  gap: 1rem;
+  align-items: center;
+  word-break: break-all;
+  color: var(--heading-color);
+  border-left: 0.5px solid var(--separator-color);
+  overflow-wrap: anywhere;
+}
+
+loc::before {
+  content: counter(entry);
+  flex: none;
+  min-width: 2ch;
+  font-size: 0.75rem;
+  line-height: 1.55rem;
+  text-align: right;
+  color: var(--placeholder-color);
+}
+
+lastmod {
+  grid-column: 2;
+  white-space: nowrap;
+  border-right: 0.5px solid var(--separator-color);
+}
+
+loc:not(:has(~ lastmod)) {
+  grid-column: 1 / -1;
+  border-right: 0.5px solid var(--separator-color);
+}
+
+:first-of-type > loc,
+:first-of-type > lastmod {
+  border-top: 0.5px solid var(--separator-color);
+}
+
+:first-of-type > loc {
+  border-top-left-radius: 14px;
+}
+
+:first-of-type > lastmod,
+:first-of-type > loc:not(:has(~ lastmod)) {
+  border-top-right-radius: 14px;
+}
+
+:last-of-type > loc {
+  border-bottom-left-radius: 14px;
+}
+
+:last-of-type > lastmod,
+:last-of-type > loc:not(:has(~ lastmod)) {
+  border-bottom-right-radius: 14px;
+}
+
+url:hover > loc,
+url:hover > lastmod,
+sitemap:hover > loc,
+sitemap:hover > lastmod {
+  background-color: var(--background-color);
+}
+
+/* Footer */
+
+urlset::after,
+sitemapindex::after {
+  content: 'Sitemap styled for humans by Nialto Services';
+  display: block;
+  margin: 1.6rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted-color);
+}
+
+/* Responsive */
+
+@media (min-width: 641px) {
+  urlset,
+  sitemapindex {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  url > loc,
+  url > lastmod,
+  sitemap > loc,
+  sitemap > lastmod {
+    padding: 0.55rem 1rem;
+  }
+}
+
+/* Motion */
+
+@media (prefers-reduced-motion: no-preference) {
+  loc,
+  lastmod {
+    transition: background-color 0.12s ease;
+  }
+}
